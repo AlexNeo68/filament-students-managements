@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\StudentsExport;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
 use App\Models\Section;
@@ -13,10 +14,13 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentResource extends Resource
 {
@@ -28,20 +32,28 @@ class StudentResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->required(),
+                TextInput::make('name')->required()->autofocus(),
                 TextInput::make('email')->required()->unique(),
 
-                Select::make('section_id')
-                    ->relationship(name: 'section', titleAttribute: 'name')
-                    ->live(),
+               
+
+
                 Select::make('classes_id')
+                    ->relationship(name: 'classes', titleAttribute: 'name')
                     ->label('Class')
+                    ->live(),
+
+                    
+                    
+
+                Select::make('section_id')
+                    ->label('Section')
                     ->options(function (Get $get) {
-                        $section_id = $get('section_id');
-                        $section = Section::find($section_id);
-                        if (!$section) return [0 => 0];
-                        return [$section->classes_id => $section->classes->name];
-                    }),
+                        $classes_id = $get('classes_id');
+                        if($classes_id) {
+                            return Section::where('classes_id', $classes_id)->pluck('name', 'id')->toArray();
+                        }
+                }),
             ]);
     }
 
@@ -51,8 +63,8 @@ class StudentResource extends Resource
             ->columns([
                 TextColumn::make('name')->sortable()->searchable(),
                 TextColumn::make('email')->sortable()->searchable(),
-                TextColumn::make('section.name'),
-                TextColumn::make('classes.name'),
+                TextColumn::make('section.name')->badge(),
+                TextColumn::make('classes.name')->badge(),
             ])
             ->filters([
                 //
@@ -64,7 +76,15 @@ class StudentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    BulkAction::make('export')
+                        ->requiresConfirmation()
+                        ->label('Export Records')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->action(function(Collection $records){
+                            return Excel::download(new StudentsExport($records), 'students.xlsx');
+                        })
                 ]),
+                
             ]);
     }
 
