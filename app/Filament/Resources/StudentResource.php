@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Exports\StudentsExport;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
+use App\Models\Classes;
 use App\Models\Section;
 use App\Models\Student;
 use Filament\Forms;
@@ -14,8 +15,10 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -67,8 +70,35 @@ class StudentResource extends Resource
                 TextColumn::make('classes.name')->badge(),
             ])
             ->filters([
-                //
+                Filter::make('filter-by-class')
+                ->form([
+                    Select::make('classes_id')
+                        ->label('Filter by class')
+                        ->placeholder('Select a class')
+                        ->options(Classes::pluck('name', 'id')->toArray()),
+                    Select::make('section_id')
+                        ->label('Filter by section')
+                        ->placeholder('Select a section')
+                        ->options(function(Get $get){
+                            $classes_id = $get('classes_id');
+                            if($classes_id){
+                                return Section::where('classes_id', $classes_id)->pluck('name', 'id')->toArray();
+                            }
+                        })
+                ])
+                ->query(function(Builder $query, array $data){
+                    return $query->when($data['classes_id'], function($query) use ($data) {
+                        return $query->where('classes_id', $data['classes_id']);
+                    })->when($data['section_id'], function($query) use ($data) {
+                        return $query->where('section_id', $data['section_id']);
+                    });
+                })
             ])
+            ->filtersTriggerAction(
+                fn (Action $action) => $action
+                    ->button()
+                    ->label('Filter'),
+            )
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
