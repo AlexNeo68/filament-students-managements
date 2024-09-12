@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     use HasFactory;
-    public $protected = ['id'];
+    public $guarded = ['id'];
 
-    public function class()
+    public function classes()
     {
         return $this->belongsTo(Classes::class);
     }

@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Classes extends Model
 {
     use HasFactory;
-    public $protected = ['id'];
-    
+    public $guarded = ['id'];
+
     public function sections()
     {
         return $this->hasMany(Section::class);

@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Section extends Model
 {
     use HasFactory;
-    public $protected = ['id'];
+    public $guarded = ['id'];
 
-    public function class()
+    public function classes()
     {
         return $this->belongsTo(Classes::class);
     }
@@ -19,5 +19,4 @@ class Section extends Model
     {
         return $this->hasMany(Student::class);
     }
-
 }
