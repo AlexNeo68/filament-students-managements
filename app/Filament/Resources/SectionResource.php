@@ -9,26 +9,37 @@ use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rules\Unique;
 
 class SectionResource extends Resource
 {
     protected static ?string $model = Section::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Academics Group';
+    public static function getNavigationBadge(): ?string
+    {
+        return static::$model::count();
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name'),
                 Select::make('classes_id')
-                    ->relationship(name: 'classes', titleAttribute: 'name')
+                    ->relationship(name: 'classes', titleAttribute: 'name'),
+                TextInput::make('name')->required()->unique(ignoreRecord: true, modifyRuleUsing: function (Get $get, Unique $rule) {
+                    return $rule->where('classes_id', $get('classes_id'));
+                }),
+
+
             ]);
     }
 
@@ -36,7 +47,8 @@ class SectionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('name'),
+                TextColumn::make('students_count')->counts('students'),
             ])
             ->filters([
                 //

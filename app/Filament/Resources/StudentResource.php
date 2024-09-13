@@ -29,7 +29,13 @@ class StudentResource extends Resource
 {
     protected static ?string $model = Student::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $navigationGroup = 'Academics Group';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::$model::count();
+    }
 
     public static function form(Form $form): Form
     {
@@ -38,7 +44,7 @@ class StudentResource extends Resource
                 TextInput::make('name')->required()->autofocus(),
                 TextInput::make('email')->required()->unique(),
 
-               
+
 
 
                 Select::make('classes_id')
@@ -46,17 +52,17 @@ class StudentResource extends Resource
                     ->label('Class')
                     ->live(),
 
-                    
-                    
+
+
 
                 Select::make('section_id')
                     ->label('Section')
                     ->options(function (Get $get) {
                         $classes_id = $get('classes_id');
-                        if($classes_id) {
+                        if ($classes_id) {
                             return Section::where('classes_id', $classes_id)->pluck('name', 'id')->toArray();
                         }
-                }),
+                    }),
             ]);
     }
 
@@ -71,37 +77,40 @@ class StudentResource extends Resource
             ])
             ->filters([
                 Filter::make('filter-by-class')
-                ->form([
-                    Select::make('classes_id')
-                        ->label('Filter by class')
-                        ->placeholder('Select a class')
-                        ->options(Classes::pluck('name', 'id')->toArray()),
-                    Select::make('section_id')
-                        ->label('Filter by section')
-                        ->placeholder('Select a section')
-                        ->options(function(Get $get){
-                            $classes_id = $get('classes_id');
-                            if($classes_id){
-                                return Section::where('classes_id', $classes_id)->pluck('name', 'id')->toArray();
-                            }
-                        })
-                ])
-                ->query(function(Builder $query, array $data){
-                    return $query->when($data['classes_id'], function($query) use ($data) {
-                        return $query->where('classes_id', $data['classes_id']);
-                    })->when($data['section_id'], function($query) use ($data) {
-                        return $query->where('section_id', $data['section_id']);
-                    });
-                })
+                    ->form([
+                        Select::make('classes_id')
+                            ->label('Filter by class')
+                            ->placeholder('Select a class')
+                            ->options(Classes::pluck('name', 'id')->toArray()),
+                        Select::make('section_id')
+                            ->label('Filter by section')
+                            ->placeholder('Select a section')
+                            ->options(function (Get $get) {
+                                $classes_id = $get('classes_id');
+                                if ($classes_id) {
+                                    return Section::where('classes_id', $classes_id)->pluck('name', 'id')->toArray();
+                                }
+                            })
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query->when($data['classes_id'], function ($query) use ($data) {
+                            return $query->where('classes_id', $data['classes_id']);
+                        })->when($data['section_id'], function ($query) use ($data) {
+                            return $query->where('section_id', $data['section_id']);
+                        });
+                    })
             ])
             ->filtersTriggerAction(
-                fn (Action $action) => $action
+                fn(Action $action) => $action
                     ->button()
                     ->label('Filter'),
             )
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Action::make('download.invoice')
+                    ->url(fn(Student $record): string => route('students.invoice.pdf', $record))
+                    ->openUrlInNewTab()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -110,11 +119,11 @@ class StudentResource extends Resource
                         ->requiresConfirmation()
                         ->label('Export Records')
                         ->icon('heroicon-o-document-arrow-down')
-                        ->action(function(Collection $records){
+                        ->action(function (Collection $records) {
                             return Excel::download(new StudentsExport($records), 'students.xlsx');
                         })
                 ]),
-                
+
             ]);
     }
 
