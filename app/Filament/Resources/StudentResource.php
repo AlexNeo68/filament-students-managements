@@ -110,7 +110,10 @@ class StudentResource extends Resource
                 Tables\Actions\DeleteAction::make(),
                 Action::make('download.invoice')
                     ->url(fn(Student $record): string => route('students.invoice.pdf', $record))
-                    ->openUrlInNewTab()
+                    ->openUrlInNewTab(),
+                Action::make('qrcode')
+                    ->url(fn(Student $record): string => route('filament.admin.resources.students.qrcode', $record))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -140,6 +143,7 @@ class StudentResource extends Resource
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
+            'qrcode' => Pages\StudentsQRCode::route('/{record}/qrcode'),
         ];
     }
 }
