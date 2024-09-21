@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('dashboard')
             ->login()
             ->colors([
-                'primary' => '#cecece',
+                'primary' => Color::Lime,
             ])
             ->font('Poppins')
             ->favicon('/favicon.ico')

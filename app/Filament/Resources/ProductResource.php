@@ -2,10 +2,19 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\ProductTypeEnum;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -29,7 +38,43 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Group::make()->schema([
+                    Section::make()->schema([
+                        TextInput::make('name'),
+                        TextInput::make('slug'),
+                        MarkdownEditor::make('description')->columnSpanFull(),
+                    ])
+                        ->columns(2),
+                    Section::make('Pricing & Inventory')->schema([
+                        TextInput::make('sku'),
+                        TextInput::make('price')->numeric(),
+                        TextInput::make('quantity')->numeric(),
+                        Select::make('type')->options([
+                            'downloadable' => ProductTypeEnum::DOWNLOADABLE->value,
+                            'deliverable' => ProductTypeEnum::DELIVERABLE->value,
+                        ])
+                    ])
+                ]),
+                Group::make()->schema([
+                    Section::make('Status')->schema([
+                        Toggle::make('is_visible'),
+                        Toggle::make('is_featured'),
+                        DatePicker::make('published_at'),
+                    ]),
+                    Section::make('Image')->schema([
+                        FileUpload::make('image')
+                            ->directory('form-attachments')
+                            ->preserveFilenames()
+                            ->image()
+                            ->imageEditor(),
+                    ])
+                        ->collapsible(),
+                    Section::make('Associations')->schema([
+                        Select::make('brand_id')->relationship('brand', 'name'),
+                        Select::make('categories')->relationship('categories', 'name')->multiple(),
+                    ])
+                        ->collapsible()
+                ])
             ]);
     }
 
@@ -42,7 +87,7 @@ class ProductResource extends Resource
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('brand.name'),
                 TextColumn::make('sku')->searchable()->sortable(),
-                TextColumn::make('quantitiy')->searchable()->sortable(),
+                TextColumn::make('quantity'),
                 TextColumn::make('price')->searchable()->sortable(),
                 IconColumn::make('is_visible')->boolean(),
                 TextColumn::make('type'),
