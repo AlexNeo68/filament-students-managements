@@ -1,0 +1,79 @@
+.styles-module-root-tzQWD {
+  padding: 0;
+  list-style-type: none;
+  counter-reset: section;
+}
+
+.styles-module-root_nested-iey_5 {
+  margin-top: var(--list-margin-top, var(--element-margin-fallback));
+  padding-inline-start: var(--list-padding-start);
+}
+
+.styles-module-root_nested_paragraph-xs-xF1K3 {
+  --list-margin-top: var(--theme-margin-normal-paragraph-xs-paragraph-xs);
+}
+
+.styles-module-root_nested_paragraph-s-mqOhM {
+  --list-margin-top: var(--theme-margin-normal-paragraph-s-paragraph-s);
+}
+
+.styles-module-root_nested_paragraph-s-dense-oJPXG {
+  /* TODO Check out is dense correct */
+  --list-margin-top: var(--theme-margin-dense-paragraph-s-paragraph-s);
+}
+
+.styles-module-root_nested_paragraph-m-IeRxF {
+  --list-margin-top: var(--theme-margin-normal-paragraph-m-paragraph-m);
+}
+
+.styles-module-root_nested_paragraph-m-dense-MqWNo {
+  /* TODO Check out is dense correct */
+  --list-margin-top: var(--theme-margin-dense-paragraph-m-paragraph-m);
+}
+
+.styles-module-root_nested_paragraph-l-fucUA {
+  --list-margin-top: var(--theme-margin-normal-paragraph-l-paragraph-l);
+}
+
+.styles-module-root_nested_paragraph-l-dense-FWcXr {
+  /* TODO Check out is dense correct */
+  --list-margin-top: var(--theme-margin-dense-paragraph-l-paragraph-l);
+}
+
+/* Sizes */
+.styles-module-root_size_xs-u0UkN {
+  --list-padding-start: 14px;
+}
+
+.styles-module-root_size_s-OCACB {
+  --list-padding-start: 16px;
+}
+
+.styles-module-root_size_m-EkVvb {
+  --list-padding-start: 20px;
+}
+
+.styles-module-root_size_l-rrn7k {
+  --list-padding-start: 20px;
+}
+
+.styles-module-root_size_xl-GcGRk {
+  --list-padding-start: 20px;
+}
+
+.styles-module-root_size_xxl-GXV1G {
+  --list-padding-start: 22px;
+}
+
+.styles-module-root_size_xxxl-u67wt {
+  --list-padding-start: 26px;
+}
+
+.styles-module-root_size_xxxxl-ZhFec {
+  --list-padding-start: 32px;
+}
+
+.styles-module-root_size_xxxxxl-XBE9i {
+  --list-padding-start: 40px;
+}
+

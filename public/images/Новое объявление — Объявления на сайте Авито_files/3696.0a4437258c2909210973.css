@@ -1,0 +1,28 @@
+@keyframes styles-fade-in-Ehcd5 {
+    from {
+        opacity: .1;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.styles-animation-ADDrd {
+    animation: styles-fade-in-Ehcd5 ease-out 200ms;
+}
+
+@keyframes category-fade-in-CsEfW {
+    from {
+        opacity: .1;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.category-animation23-G7qrb {
+    animation: category-fade-in-CsEfW ease-out 200ms;
+}
+
