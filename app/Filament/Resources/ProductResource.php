@@ -16,14 +16,18 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
@@ -40,15 +44,35 @@ class ProductResource extends Resource
             ->schema([
                 Group::make()->schema([
                     Section::make()->schema([
-                        TextInput::make('name'),
-                        TextInput::make('slug'),
+                        TextInput::make('name')
+                            ->required()
+                            ->unique()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (string $operation, $state, Set $set) {
+                                // if ($operation !== 'create') return;
+                                $set('slug', Str::slug($state));
+                            }),
+                        TextInput::make('slug')
+                            ->disabled()
+                            ->dehydrated()
+                            ->required()
+                            ->unique(Product::class, 'slug', ignoreRecord: true),
                         MarkdownEditor::make('description')->columnSpanFull(),
                     ])
                         ->columns(2),
                     Section::make('Pricing & Inventory')->schema([
-                        TextInput::make('sku'),
-                        TextInput::make('price')->numeric(),
-                        TextInput::make('quantity')->numeric(),
+                        TextInput::make('sku')
+                            ->required()
+                            ->label('SKU (Stock Keeping Unit)'),
+                        TextInput::make('price')
+                            ->required()
+                            ->rules('regex:/^\d{1,6}(\.\d{0,2})?$/'),
+
+                        TextInput::make('quantity')
+                            ->numeric()
+                            ->minValue(0)
+                            ->required()
+                            ->maxValue(100),
                         Select::make('type')->options([
                             'downloadable' => ProductTypeEnum::DOWNLOADABLE->value,
                             'deliverable' => ProductTypeEnum::DELIVERABLE->value,
@@ -57,9 +81,16 @@ class ProductResource extends Resource
                 ]),
                 Group::make()->schema([
                     Section::make('Status')->schema([
-                        Toggle::make('is_visible'),
-                        Toggle::make('is_featured'),
-                        DatePicker::make('published_at'),
+                        Toggle::make('is_visible')
+                            ->label('Visibility')
+                            ->helperText('Enable or disable visible product')
+                            ->default(true),
+                        Toggle::make('is_featured')
+                            ->label('Featured')
+                            ->helperText('Enable or disable featured product')
+                            ->default(false),
+                        DatePicker::make('published_at')
+                            ->default(now()),
                     ]),
                     Section::make('Image')->schema([
                         FileUpload::make('image')
@@ -70,7 +101,9 @@ class ProductResource extends Resource
                     ])
                         ->collapsible(),
                     Section::make('Associations')->schema([
-                        Select::make('brand_id')->relationship('brand', 'name'),
+                        Select::make('brand_id')
+                            ->label('Brand')
+                            ->relationship('brand', 'name'),
                         Select::make('categories')->relationship('categories', 'name')->multiple(),
                     ])
                         ->collapsible()
@@ -84,17 +117,39 @@ class ProductResource extends Resource
             ->columns([
 
                 ImageColumn::make('image'),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('brand.name'),
-                TextColumn::make('sku')->searchable()->sortable(),
-                TextColumn::make('quantity'),
-                TextColumn::make('price')->searchable()->sortable(),
-                IconColumn::make('is_visible')->boolean(),
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('brand.name')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                IconColumn::make('is_visible')
+                    ->sortable()
+                    ->toggleable()
+                    ->label('Visibility')
+                    ->boolean(),
+
+                TextColumn::make('price')
+                    ->toggleable()
+                    ->sortable(),
+                TextColumn::make('quantity')
+                    ->toggleable()
+                    ->sortable(),
+                TextColumn::make('published_at')
+                    ->date()
+                    ->sortable(),
                 TextColumn::make('type'),
-                TextColumn::make('published_at'),
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_visible')
+                    ->label('Visibility')
+                    ->boolean()
+                    ->trueLabel('Only visible products')
+                    ->falseLabel('Only not visible products')
+                    ->native(false),
+                SelectFilter::make('brand')
+                    ->relationship('brand', 'name')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
