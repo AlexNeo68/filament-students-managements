@@ -24,13 +24,6 @@ class CustomerResource extends Resource
     public static function form(Form $form): Form
     {
 
-        // name
-        // email
-        // phone
-        // date_of_birth
-        // address
-        // zip_code
-        // city
         return $form
             ->schema([
                 Forms\Components\Group::make()->schema([
