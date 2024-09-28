@@ -26,6 +26,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
@@ -38,6 +39,25 @@ class ProductResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
     protected static ?string $navigationLabel = 'Товары';
 
+    protected static ?string $recordTitleAttribute = 'name';
+    protected static int $globalSearchResultsLimit = 20;
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['sku', 'slug', 'description'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Brand' => $record->brand->name,
+        ];
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['brand']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -46,7 +66,7 @@ class ProductResource extends Resource
                     Section::make()->schema([
                         TextInput::make('name')
                             ->required()
-                            ->unique()
+                            ->unique(ignoreRecord: true)
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (string $operation, $state, Set $set) {
                                 // if ($operation !== 'create') return;
@@ -128,7 +148,9 @@ class ProductResource extends Resource
                     ->sortable()
                     ->toggleable()
                     ->label('Visibility')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggle(),
+
 
                 TextColumn::make('price')
                     ->toggleable()
