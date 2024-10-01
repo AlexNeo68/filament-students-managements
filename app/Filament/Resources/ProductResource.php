@@ -135,9 +135,46 @@ class ProductResource extends Resource
                         Select::make('brand_id')
                             ->label('Brand')
                             ->relationship('brand', 'name'),
+
+
                         Select::make('categories')
                             ->relationship('categories', 'name')
-                            ->multiple(),
+                            ->multiple()
+                            ->preload()
+                            ->createOptionForm([
+                                Group::make()->schema([
+                                    Forms\Components\Section::make([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required()
+                                            ->live(onBlur: true)
+                                            ->unique()
+                                            ->afterStateUpdated(function (string $operation, $state, Forms\Set $set) {
+                                                $set('slug', Str::slug($state));
+                                            }),
+
+                                        Forms\Components\TextInput::make('slug')
+                                            ->dehydrated()
+                                            ->required()
+                                            ->unique(Product::class, 'slug', ignoreRecord: true),
+
+                                        Forms\Components\MarkdownEditor::make('description')
+                                            ->columnSpanFull()
+                                    ])->columns(2)
+                                ]),
+                                Forms\Components\Group::make()
+                                    ->schema([
+                                        Forms\Components\Section::make('Status')
+                                            ->schema([
+                                                Forms\Components\Toggle::make('is_visible')
+                                                    ->label('Visibility')
+                                                    ->helperText('Enable or disable category visibility')
+                                                    ->default(true),
+
+                                                Forms\Components\Select::make('parent_id')
+                                                    ->relationship('parent', 'name')
+                                            ])
+                                    ])
+                            ])
                     ])
                         ->collapsible()
                 ])
