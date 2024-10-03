@@ -30,6 +30,11 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
     protected static ?int $navigationSort = 3;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -49,10 +54,10 @@ class OrderResource extends Resource
                             ->required(),
 
                         TextInput::make('number')
-                            ->dehydrated()
+                            ->default('OR-' . random_int(100000, 9999999))
                             ->disabled()
-                            ->required()
-                            ->default('NO-' . random_int(10000, 1000000)),
+                            ->dehydrated()
+                            ->required(),
                         Select::make('status')
                             ->required()
                             ->options([
@@ -65,7 +70,7 @@ class OrderResource extends Resource
                             ->label('Shipping Cost')
                             ->required(),
 
-                        Textarea::make('notes')->columnSpan('full')
+                        Textarea::make('notes')->columnSpan('full')->required()
                     ])->columns(2),
                     Step::make('Order Items')->schema([
                         Repeater::make('items')->schema([
