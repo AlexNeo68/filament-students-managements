@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Classes;
+use App\Models\Product;
 use App\Models\Section;
 use App\Models\Student;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -15,7 +16,7 @@ class StatsOverview extends BaseWidget
         return [
             Stat::make('Total classes', Classes::count()),
             Stat::make('Total sections', Section::count()),
-            Stat::make('Total students', Student::count()),
+            Stat::make('Total products', Product::count()),
         ];
     }
 }
